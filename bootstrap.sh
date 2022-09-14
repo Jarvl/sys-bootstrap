@@ -72,11 +72,6 @@ install_neovim() {
   cp ./squashfs-root/AppRun /usr/bin/nvim
 } && cache_func_call install_neovim
 
-install_thefuck_alias() {
-  sudo apt install python3-dev python3-pip python3-setuptools
-  pip3 install thefuck --user
-} && cache_func_call install_thefuck_alias
-
 install_zsh() {
   sudo apt install zsh
   zsh --version
@@ -93,6 +88,7 @@ configure_ohmyzsh() {
 
 install_asdf() {
   git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.2
+  . $HOME/.asdf/asdf.sh # Temporarily source asdf so installation can proceed without restarting shell
 } && cache_func_call install_asdf
 
 install_asdf_python() {
@@ -120,6 +116,10 @@ install_asdf_rust() {
   asdf global rust $asdf_rust_version
 } && cache_func_call install_asdf_rust
 
+install_thefuck_alias() {
+  pip install thefuck --user
+} && cache_func_call install_thefuck_alias
+
 install_kde_plasma() {
   sudo apt install kde-plasma-desktop
 } && cache_func_call install_kde_plasma
@@ -142,10 +142,6 @@ configure_git
 echo ""
 echo "Installing neovim"
 install_neovim
-
-echo ""
-echo "Installing thefuck alias"
-install_thefuck_alias
 
 echo ""
 echo "Installing zsh and setting as default shell (requires logout)"
@@ -174,6 +170,10 @@ install_asdf_nodejs
 echo ""
 echo "Installing Rust via asdf"
 install_asdf_rust
+
+echo ""
+echo "Installing thefuck alias"
+install_thefuck_alias
 
 echo ""
 echo "Installing KDE Plasma"
