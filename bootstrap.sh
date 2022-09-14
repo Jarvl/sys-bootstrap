@@ -1,10 +1,10 @@
 #!/bin/bash
 
-set -euo pipefail
+set -euxo pipefail
 
 cache_dir=.cache
 
-if [[ $* == *--reset-cache* ]]; then
+if [[ $* == *--no-cache* ]]; then
   rm -rf $cache_dir
 fi
 
@@ -54,10 +54,13 @@ configure_git() {
   echo "Public key contents:"
   cat "$private_key_filename.pub"
 
+  # TODO: Ask "Would you like to test your Github SSH connection?"
+
   echo ""
   read -p "Add public key to Github, then press any button to test SSH connection" -n 1
 
-  while ! ssh -T git@github.com; do
+  # Will return with exit code 1 when successfully authenticated
+  while ssh -T git@github.com; [[ $? -ne 1 ]]; do
     echo ""
     read -p "SSH connection to Github failed, press any button to try again" -n 1
   done
@@ -68,30 +71,34 @@ configure_git() {
 
 install_docker() {
   # From https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
-  sudo apt install \
+  sudo apt install -y \
     ca-certificates \
     gnupg \
     lsb-release
   sudo mkdir -p /etc/apt/keyrings
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
   echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
   sudo chmod a+r /etc/apt/keyrings/docker.gpg # Added in case default umask doesn't provide read permissions
   sudo apt update
-  sudo apt install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
-  # From https://docs.docker.com/engine/install/linux-postinstall/
-  sudo groupadd docker
-  sudo usermod -aG docker $USER
-  newgrp docker
-  sudo systemctl enable docker.service
-  sudo systemctl enable containerd.service
+  sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
   echo ""
   echo "Verifying docker installation"
   sudo service docker start
-  docker run hello-world
+  # Workaround because newgrp starts a new shell
+  sudo docker run hello-world
+
+  sudo systemctl enable docker.service
+  sudo systemctl enable containerd.service
+
+  # From https://docs.docker.com/engine/install/linux-postinstall/
+  sudo getent group docker || sudo groupadd docker
+  sudo usermod -aG docker $(whoami)
+  # Suppress errors about .docker directory not existing
+  sudo chown "$(whoami)":"$(whoami)" /home/"$(whoami)"/.docker -R 2>/dev/null
+  sudo chmod g+rwx "/home/$(whoami)/.docker" -R 2>/dev/null
 } && cache_func_call install_docker
 
 install_neovim() {
@@ -102,7 +109,7 @@ install_neovim() {
 } && cache_func_call install_neovim
 
 install_zsh() {
-  sudo apt install zsh
+  sudo apt install -y zsh
   zsh --version
   chsh -s $(which zsh)
 } && cache_func_call install_zsh
@@ -122,7 +129,7 @@ install_asdf() {
 
 install_asdf_python() {
   asdf plugin-add python
-  sudo apt-get install make build-essential libssl-dev zlib1g-dev \
+  sudo apt install -y make build-essential libssl-dev zlib1g-dev \
                             libbz2-dev libreadline-dev libsqlite3-dev llvm \
                             libncursesw5-dev xz-utils tk-dev libxml2-dev \
                             libxmlsec1-dev libffi-dev liblzma-dev\
