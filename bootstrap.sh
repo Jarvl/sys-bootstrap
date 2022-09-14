@@ -2,35 +2,27 @@
 
 set -euo pipefail
 
-make_tmp_dir() {
-  mktemp -d -t sys-bootstrap.XXXXXX
-}
-
-existing_cache_dir=( /tmp/sys-bootstrap.* )
+cache_dir=.cache
 
 if [[ $* == *--reset-cache* ]]; then
-  rm -rf $existing_cache_dir
+  rm -rf $cache_dir
 fi
 
-if [[ -d $existing_cache_dir ]]; then
-  cache_dir=$existing_cache_dir
-else
-  cache_dir=$(make_tmp_dir)
+if [[ ! -d $cache_dir ]]; then
+  mkdir $cache_dir
 fi
-
-echo "DEBUG: temp folder location: $cache_dir"
 
 cache_func_call() {
   eval "
     _inner_$(typeset -f "$1")
     $1"'() {
-      local func_tmp_file="$cache_dir/'"$1"'"
-      if [[ -f $func_tmp_file ]]; then
+      local func_cache_file="$cache_dir/'"$1"'"
+      if [[ -f $func_cache_file ]]; then
         echo >&2 "Ran previously, skipping..."
         return 0
       else
         _inner_'"$1"' "$@"
-        touch $func_tmp_file
+        touch $func_cache_file
         return $? # Added for completeness, but negated by set -e
       fi
     }'
@@ -50,20 +42,57 @@ configure_git() {
   git config --global user.name "$git_config_name"
   git config --global user.email "$git_config_email"
   
-  # From: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+  # From https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+  echo ""
   echo "Generating SSH keypair"
   private_key_filename="$HOME/.ssh/ed25519"
   ssh-keygen -t ed25519 -f $private_key_filename -C "$git_config_email" || echo "ssh-keygen exited with code $?"
   eval "$(ssh-agent -s)"
-  # ssh-add $private_key_filename
+  ssh-add $private_key_filename
 
   echo ""
   echo "Public key contents:"
   cat "$private_key_filename.pub"
 
   echo ""
-  read -p "Add public key to Github, then press any button to continue" -n 1
+  read -p "Add public key to Github, then press any button to test SSH connection" -n 1
+
+  while ! ssh -T git@github.com; do
+    echo ""
+    read -p "SSH connection to Github failed, press any button to try again" -n 1
+  done
+
+  echo ""
+  echo "SSH connection to Github was successful"
 } && cache_func_call configure_git
+
+install_docker() {
+  # From https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+  sudo apt install \
+    ca-certificates \
+    gnupg \
+    lsb-release
+  sudo mkdir -p /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo chmod a+r /etc/apt/keyrings/docker.gpg # Added in case default umask doesn't provide read permissions
+  sudo apt update
+  sudo apt install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+  # From https://docs.docker.com/engine/install/linux-postinstall/
+  sudo groupadd docker
+  sudo usermod -aG docker $USER
+  newgrp docker
+  sudo systemctl enable docker.service
+  sudo systemctl enable containerd.service
+
+  echo ""
+  echo "Verifying docker installation"
+  sudo service docker start
+  docker run hello-world
+} && cache_func_call install_docker
 
 install_neovim() {
   curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
@@ -87,7 +116,7 @@ configure_ohmyzsh() {
 } && cache_func_call configure_ohmyzsh
 
 install_asdf() {
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.2
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf
   . $HOME/.asdf/asdf.sh # Temporarily source asdf so installation can proceed without restarting shell
 } && cache_func_call install_asdf
 
@@ -138,6 +167,10 @@ install_git
 echo ""
 echo "Configuring git"
 configure_git
+
+echo ""
+echo "Installing docker"
+install_docker
 
 echo ""
 echo "Installing neovim"
