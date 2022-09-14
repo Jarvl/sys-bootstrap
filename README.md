@@ -7,3 +7,10 @@ Install git
 ```bash
 $ sudo apt update && sudo apt install git
 ```
+
+## Running Locally
+
+Clone this repository, then run the following
+```bash
+$ cd sys-bootstrap && chmod +x bootstrap.sh && ./bootstrap.sh
+```
