@@ -29,7 +29,7 @@ $ docker build -t sys-bootstrap .
 
 Run and SSH into container
 ```bash
-$ docker run -ti -v $(pwd)/:/home/testuser/sys-bootstrap sys-bootstrap /bin/bash
+$ docker run --rm --privileged -ti -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/:/home/testuser/sys-bootstrap sys-bootstrap /bin/bash
 ```
 
 After SSHing into the container, run the script
