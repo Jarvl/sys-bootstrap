@@ -1,2 +1,4 @@
 .cache/
 *.swp
+squashfs-root/
+nvim.appimage
