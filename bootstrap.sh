@@ -33,7 +33,7 @@ update_apt() {
 } && cache_func_call update_apt
 
 install_git() {
-  sudo apt install curl git
+  sudo apt install -y curl git
 } && cache_func_call install_git
 
 configure_git() {
@@ -170,7 +170,7 @@ install_thefuck_alias() {
 } && cache_func_call install_thefuck_alias
 
 install_kde_plasma() {
-  sudo apt install kde-plasma-desktop
+  sudo apt install -y kde-plasma-desktop
 } && cache_func_call install_kde_plasma
 
 echo ""
