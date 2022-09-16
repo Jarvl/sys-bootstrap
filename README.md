@@ -1,21 +1,10 @@
 # sys-bootstrap
 Utility for bootstrapping a fresh system (Ubuntu) install. Current use is for fresh bare metal installs on a workstation.
 
+## Usage
 
-## Running Locally
-
-### Prerequisites
-
-Install git
 ```bash
-$ sudo apt update && sudo apt install git
-```
-
-### Usage
-
-Clone this repository, then run the following
-```bash
-$ cd sys-bootstrap && chmod +x bootstrap.sh && ./bootstrap.sh
+bash -c "$(wget https://raw.githubusercontent.com/Jarvl/sys-bootstrap/main/bootstrap.sh -O -)"
 ```
 
 ## Development
@@ -24,12 +13,12 @@ A `Dockerfile` is included with this project to simulate testing on a fresh inst
 
 Build the container
 ```bash
-$ docker build -t sys-bootstrap .
+docker build -t sys-bootstrap .
 ```
 
 Run and SSH into container
 ```bash
-$ docker run --rm --privileged -ti -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/:/home/testuser/sys-bootstrap sys-bootstrap /bin/bash
+docker run --rm --privileged -ti -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd)/:/home/testuser/sys-bootstrap sys-bootstrap /bin/bash
 ```
 
 After SSHing into the container, run the script

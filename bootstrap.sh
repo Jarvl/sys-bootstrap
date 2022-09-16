@@ -137,12 +137,12 @@ configure_ohmyzsh() {
 } && cache_func_call configure_ohmyzsh
 
 install_asdf() {
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf
-  . $HOME/.asdf/asdf.sh # Temporarily source asdf so installation can proceed without restarting shell
+  # git clone https://github.com/asdf-vm/asdf.git ~/.asdf
+  echo ". $HOME/.asdf/asdf.sh" | tee -a $HOME/.bashrc 1>/dev/null
+  source ~/.bashrc
 } && cache_func_call install_asdf
 
 install_asdf_python() {
-  . $HOME/.asdf/asdf.sh # Temporarily source asdf so installation can proceed without restarting shell
   asdf plugin-add python || echo ""
   sudo apt install -y make build-essential libssl-dev zlib1g-dev \
                             libbz2-dev libreadline-dev libsqlite3-dev llvm \
@@ -154,7 +154,6 @@ install_asdf_python() {
 } && cache_func_call install_asdf_python
 
 install_asdf_nodejs() {
-  . $HOME/.asdf/asdf.sh # Temporarily source asdf so installation can proceed without restarting shell
   asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git || echo ""
   read -p "Enter Node.js version and press [ENTER]: " asdf_nodejs_version
   asdf install nodejs $asdf_nodejs_version
@@ -162,7 +161,6 @@ install_asdf_nodejs() {
 } && cache_func_call install_asdf_nodejs
 
 install_asdf_rust() {
-  . $HOME/.asdf/asdf.sh # Temporarily source asdf so installation can proceed without restarting shell
   asdf plugin-add rust https://github.com/asdf-community/asdf-rust.git || echo ""
   read -p "Enter Rust version and press [ENTER]: " asdf_rust_version
   asdf install rust $asdf_rust_version
