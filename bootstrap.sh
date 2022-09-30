@@ -46,14 +46,15 @@ configure_git() {
   # From https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
   echo ""
   echo "Generating SSH keypair"
-  private_key_filename="$HOME/.ssh/ed25519"
-  ssh-keygen -t ed25519 -f $private_key_filename -C "$git_config_email" || echo "ssh-keygen exited with code $?"
-  eval "$(ssh-agent -s)"
-  ssh-add $private_key_filename
+  private_key_filename="ed25519"
+  private_key_path="$HOME/.ssh/$private_key_filename"
+  ssh-keygen -t ed25519 -f $private_key_path -C "$git_config_email" || echo "ssh-keygen exited with code $?"
+  echo "IdentityFile ~/.ssh/$private_key_filename" >> $HOME/.ssh/config
+  chmod 600 $HOME/.ssh/config
 
   echo ""
   echo "Public key contents:"
-  cat "$private_key_filename.pub"
+  cat "$private_key_path.pub"
 
   echo ""
   read -p "Add public key to Github, then press any button to test SSH connection" -n 1
