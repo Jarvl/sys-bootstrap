@@ -181,6 +181,14 @@ install_kde_plasma() {
   sudo apt install -y kde-plasma-desktop
 } && cache_func_call install_kde_plasma
 
+install_vscode() {
+  pushd /tmp
+  curl -Lo vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
+  sudo dpkg -i vscode.deb
+  rm -rf vscode.deb
+  popd
+} && cache_func_call install_vscode
+
 echo ""
 echo "Lift yourself up by your bootstraps."
 
@@ -239,6 +247,10 @@ install_thefuck_alias
 echo ""
 echo "Installing KDE Plasma."
 install_kde_plasma
+
+echo ""
+echo "Installing VS Code"
+install_vscode
 
 # TODO: install lunarvim
 
