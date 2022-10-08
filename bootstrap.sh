@@ -189,6 +189,11 @@ install_vscode() {
   popd
 } && cache_func_call install_vscode
 
+install_neofetch() {
+  sudo apt install -y neofetch
+  [ -z "$(cat $HOME/.zshrc | grep 'neofetch' 2>&1)" ] && echo "neofetch" >> $HOME/.zshrc
+} && cache_func_call install_neofetch
+
 echo ""
 echo "Lift yourself up by your bootstraps."
 
@@ -251,6 +256,10 @@ install_kde_plasma
 echo ""
 echo "Installing VS Code"
 install_vscode
+
+echo ""
+echo "Installing neofetch"
+install_neofetch
 
 # TODO: install lunarvim
 
