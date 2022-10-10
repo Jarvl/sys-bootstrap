@@ -113,15 +113,14 @@ install_docker() {
 } && cache_func_call install_docker
 
 install_neovim() {
-  workdir=$(pwd)
-  cd /tmp
+  pushd /tmp
   curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
   sudo chmod u+x nvim.appimage
   sudo ./nvim.appimage --appimage-extract > /dev/null
   sudo mv squashfs-root /
   sudo ln -s /squashfs-root/AppRun /usr/bin/nvim
   rm -f nvim.appimage
-  cd $workdir
+  popd
 } && cache_func_call install_neovim
 
 install_zsh() {
