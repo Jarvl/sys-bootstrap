@@ -165,6 +165,15 @@ install_asdf_nodejs() {
   asdf global nodejs $asdf_nodejs_version
 } && cache_func_call install_asdf_nodejs
 
+install_asdf_ruby() {
+  sudo apt install -y autoconf bison patch build-essential rustc libssl-dev libyaml-dev libreadline6-dev zlib1g-dev libgmp-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev libdb-dev uuid-dev
+  asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git || echo ""
+  read -p "Enter Ruby version and press [ENTER]: " asdf_ruby_version
+  asdf install ruby $asdf_ruby_version
+  asdf global ruby $asdf_ruby_version
+} && cache_func_call install_asdf_ruby
+
+# TODO: replace with recommended installation of rust (not through asdf)
 install_asdf_rust() {
   asdf plugin-add rust https://github.com/asdf-community/asdf-rust.git || echo ""
   read -p "Enter Rust version and press [ENTER]: " asdf_rust_version
@@ -239,6 +248,10 @@ install_asdf_python
 echo ""
 echo "Installing Node.js via asdf."
 install_asdf_nodejs
+
+echo ""
+echo "Installing Ruby via asdf."
+install_asdf_ruby
 
 echo ""
 echo "Installing Rust via asdf."
